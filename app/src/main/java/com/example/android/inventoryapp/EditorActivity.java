@@ -13,6 +13,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -23,11 +24,15 @@ import android.widget.Toast;
 
 import com.example.android.inventoryapp.data.InventoryContract.InventoryEntry;
 import com.example.android.inventoryapp.data.InventoryDbHelper;
+
+import static android.R.attr.id;
+
 /**
  * Created by Niamh on 25/07/2017.
  */
 
 public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>  {
+    private static final String TAG = EditorActivity.class.getSimpleName();
     private static final int EXISTING_ITEM_LOADER = 0;
     private EditText mNameEditText;
     private EditText mPriceEditText;
@@ -56,7 +61,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             setTitle(getString(R.string.editor_activity_title_new_item));
             invalidateOptionsMenu();
         } else {
-            setTitle(getString(R.string.editor_activity_title_new_item));
+            setTitle(getString(R.string.editor_activity_title_edit_item));
             getSupportLoaderManager().initLoader(EXISTING_ITEM_LOADER, null, this);
         }
         // Find all relevant views that we will need to read user input from
@@ -67,18 +72,25 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     }
 
     private void saveItem() {
+
+        Log.i(TAG,"Trying to save item");
         // Read from input fields
         // Use trim to eliminate leading or trailing white space
         String nameString = mNameEditText.getText().toString().trim();
-        String priceString = mPriceEditText.getText().toString().trim();
-        String quantityString = mQuantityEditText.getText().toString().trim();
-
-        if (mCurrentItemUri == null &&
-                TextUtils.isEmpty(nameString) && TextUtils.isEmpty(priceString) &&
-                TextUtils.isEmpty(quantityString)) {
+        if(TextUtils.isEmpty(nameString)) {
+            Toast.makeText(this, getString(R.string.editor_no_name_error), Toast.LENGTH_SHORT).show();
             return;
         }
-
+        String priceString = mPriceEditText.getText().toString().trim();
+        if(TextUtils.isEmpty(priceString)) {
+            Toast.makeText(this, getString(R.string.editor_no_price_error), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String quantityString = mQuantityEditText.getText().toString().trim();
+        if(TextUtils.isEmpty(quantityString)) {
+            Toast.makeText(this, getString(R.string.editor_no_quantity_error), Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         ContentValues values = new ContentValues();
         values.put(InventoryEntry.COLUMN_ITEM_NAME, nameString);
@@ -93,13 +105,12 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             // Show a toast message depending on whether or not the insertion was successful.
             if (newUri == null) {
                 // If the new content URI is null, then there was an error with insertion.
-                Toast.makeText(this, getString(R.string.editor_insert_item_failed),
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.editor_insert_item_failed), Toast.LENGTH_SHORT).show();
             } else {
                 // Otherwise, the insertion was successful and we can display a toast.
-                Toast.makeText(this, getString(R.string.editor_insert_item_successful),
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.editor_insert_item_successful), Toast.LENGTH_SHORT).show();
             }
+            finish();
         } else {
             // Otherwise this is an EXISTING item, so update the item with content URI: mCurrentItemUri
             // and pass in the new ContentValues. Pass in null for the selection and selection args
@@ -109,14 +120,18 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             // Show a toast message depending on whether or not the update was successful.
             if (rowsAffected == 0) {
                 // If no rows were affected, then there was an error with the update.
-                Toast.makeText(this, getString(R.string.editor_update_item_failed),
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.editor_update_item_failed), Toast.LENGTH_SHORT).show();
             } else {
                 // Otherwise, the update was successful and we can display a toast.
-                Toast.makeText(this, getString(R.string.editor_update_item_successful),
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.editor_update_item_successful), Toast.LENGTH_SHORT).show();
+                finish();
             }
         }
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_editor, menu);
+        return true;
     }
 
     @Override
@@ -138,7 +153,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
                 saveItem();
-                finish();
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
@@ -196,14 +210,18 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         // Since the editor shows all item attributes, define a projection that contains
         // all columns from the item table
-        String[] projection = {
-                InventoryEntry._ID,
-                InventoryEntry.COLUMN_ITEM_NAME,
-                InventoryEntry.COLUMN_ITEM_PRICE,
-                InventoryEntry.COLUMN_ITEM_QUANTITY};
-
-        // This loader will execute the ContentProvider's query method on a background thread
-        return new CursorLoader(this, mCurrentItemUri, projection, null, null, null);
+        switch (id) {
+            case EXISTING_ITEM_LOADER:
+                String[] projection = {
+                        InventoryEntry._ID,
+                        InventoryEntry.COLUMN_ITEM_NAME,
+                        InventoryEntry.COLUMN_ITEM_PRICE,
+                        InventoryEntry.COLUMN_ITEM_QUANTITY};
+                // This loader will execute the ContentProvider's query method on a background thread
+                return new CursorLoader(this, mCurrentItemUri, projection, null, null, null);
+            default:
+                return null;
+        }
     }
 
     @Override

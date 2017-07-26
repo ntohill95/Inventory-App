@@ -13,7 +13,7 @@
     <string name="editor_activity_title_new_item">Add an Item</string>
     <string name="editor_insert_item_failed">Error with saving item</string>
     <string name="editor_insert_item_successful">Item saved</string>
-    <string name="editor_update_item_successful">Item updated Successfully!</string>
+    <string name="editor_update_item_successful">Item updated!</string>
     <string name="editor_update_item_failed">Item update failed</string>
     <string name="unsaved_changes_dialog_msg">Changes are unsaved</string>
     <string name="discard">Discard</string>
@@ -26,6 +26,10 @@
     <string name="action_save">Save</string>
     <string name="action_delete">Delete</string>
     <string name="action_insert_dummy_data">Insert Dummy Data</string>
+    <string name="editor_activity_title_edit_item">Edit Item</string>
+    <string name="editor_no_name_error">No name given to item</string>
+    <string name="editor_no_price_error">No price given to item</string>
+    <string name="editor_no_quantity_error">No quantity provided</string>
     <string name="action_delete_all_entries">Delete All Items</string>
 
 
