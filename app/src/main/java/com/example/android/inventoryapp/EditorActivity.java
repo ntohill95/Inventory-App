@@ -48,6 +48,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private Uri mCurrentItemUri;
     private static final int PICK_IMAGE_REQUEST = 1;
     private Button mDeleteButton;
+    private Button mOrderButton;
     private Button mImageChooser;
     private ImageButton mIncreaseQuantity;
     private ImageButton mDecreaseQuantity;
@@ -70,6 +71,21 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mPriceEditText = (EditText) findViewById(R.id.edit_price);
         mQuantityEditText = (EditText) findViewById(R.id.edit_quantity);
         mIncreaseQuantity = (ImageButton) findViewById(R.id.increaseQuantity);
+        mOrderButton = (Button)findViewById(R.id.orderButton);
+        mOrderButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_SENDTO);
+                intent.setData(Uri.parse("mailto:")); // only email apps should handle this
+                intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.emailOrder) +" "+ mNameEditText.getText().toString());
+                intent.putExtra(Intent.EXTRA_TEXT, mPriceEditText.getText().toString());
+                intent.putExtra(Intent.EXTRA_TEXT, mQuantityEditText.getText().toString());
+
+                if (intent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(intent);
+                }
+            }
+        });
         mDecreaseQuantity = (ImageButton) findViewById(R.id.decreaseQuantity);
         mDeleteButton = (Button) findViewById(R.id.deleteButton);
         mDeleteButton.setOnClickListener(new View.OnClickListener() {

@@ -33,6 +33,8 @@
     <string name="editor_no_name_error">No name given to item</string>
     <string name="editor_no_price_error">No price given to item</string>
     <string name="editor_no_quantity_error">No quantity provided</string>
+    <string name="order">Order More</string>
+    <string name="emailOrder">Order for more:</string>
     <string name="action_delete_all_entries">Delete All Items</string>
 
 
