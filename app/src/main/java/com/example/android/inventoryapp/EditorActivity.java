@@ -246,6 +246,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     public void onBackPressed() {
         Log.i(TAG, "Pressing the back button");
         if (hasItemChanged() == false) {
+            super.onBackPressed();
             return;
         }
         // Otherwise if there are unsaved changes, setup a dialog to warn the user.
