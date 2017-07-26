@@ -89,4 +89,28 @@
                 style="@style/EditorFieldStyle" />
         </LinearLayout>
     </LinearLayout>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/deleteButton"
+        android:text="@string/delete"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_gravity="center">
+
+        <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/decreaseQuantity"
+            android:src="@android:drawable/ic_input_delete"/>
+        <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/increaseQuantity"
+            android:src="@android:drawable/ic_input_add"/>
+
+    </LinearLayout>
 </LinearLayout>

@@ -16,17 +16,15 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.example.android.inventoryapp.data.InventoryContract.InventoryEntry;
-import com.example.android.inventoryapp.data.InventoryDbHelper;
 
 import static android.R.attr.id;
-import static com.example.android.inventoryapp.R.id.quantity;
 
 /**
  * Created by Niamh on 25/07/2017.
@@ -39,10 +37,12 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private EditText mPriceEditText;
     private EditText mQuantityEditText;
     private Uri mCurrentItemUri;
-
-    private String currentUriName;
-    private String currentUriPrice;
-    private String currentUriQuanitiy;
+    private Button mDeleteButton;
+    private ImageButton mIncreaseQuantity;
+    private ImageButton mDecreaseQuantity;
+    private String mCurrentUriName;
+    private String mCurrentUriPrice;
+    private String mCurrentUriQuanitiy;
 
 
     @Override
@@ -53,17 +53,53 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         Intent intent = getIntent();
         mCurrentItemUri = intent.getData();
 
-        if (mCurrentItemUri == null) {
-            setTitle(getString(R.string.editor_activity_title_new_item));
-            invalidateOptionsMenu();
-        } else {
-            setTitle(getString(R.string.editor_activity_title_edit_item));
-            getSupportLoaderManager().initLoader(EXISTING_ITEM_LOADER, null, this);
-        }
         // Find all relevant views that we will need to read user input from
         mNameEditText = (EditText) findViewById(R.id.edit_name);
         mPriceEditText = (EditText) findViewById(R.id.edit_price);
         mQuantityEditText = (EditText) findViewById(R.id.edit_quantity);
+        mIncreaseQuantity = (ImageButton) findViewById(R.id.increaseQuantity);
+        mDecreaseQuantity = (ImageButton) findViewById(R.id.decreaseQuantity);
+        mDeleteButton = (Button) findViewById(R.id.deleteButton);
+        mDeleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDeleteConfirmationDialog();
+            }
+        });
+
+        if (mCurrentItemUri == null) {
+            setTitle(getString(R.string.editor_activity_title_new_item));
+            mIncreaseQuantity.setVisibility(View.GONE);
+            mDecreaseQuantity.setVisibility(View.GONE);
+            mDeleteButton.setVisibility(View.GONE);
+            invalidateOptionsMenu();
+        } else {
+            mIncreaseQuantity.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int newQuantity = Integer.parseInt(mCurrentUriQuanitiy) + 1;
+                    ContentValues values = new ContentValues();
+                    values.put(InventoryEntry.COLUMN_ITEM_QUANTITY, Integer.toString(newQuantity));
+                    getContentResolver().update(mCurrentItemUri, values, null, null);
+                }
+            });
+            mDecreaseQuantity.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int newQuantity = Integer.parseInt(mCurrentUriQuanitiy) - 1;
+                    if (newQuantity < 0) {
+                        return;
+                    }
+                    ContentValues values = new ContentValues();
+                    values.put(InventoryEntry.COLUMN_ITEM_QUANTITY, Integer.toString(newQuantity));
+                    getContentResolver().update(mCurrentItemUri, values, null, null);
+                }
+
+            });
+            setTitle(getString(R.string.editor_activity_title_edit_item));
+            getSupportLoaderManager().initLoader(EXISTING_ITEM_LOADER, null, this);
+        }
+
 
     }
 
@@ -223,14 +259,14 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             int priceColumnIndex = cursor.getColumnIndex(InventoryEntry.COLUMN_ITEM_PRICE);
             int quantityColumnIndex = cursor.getColumnIndex(InventoryEntry.COLUMN_ITEM_QUANTITY);
 
-            currentUriName = cursor.getString(nameColumnIndex);
-            currentUriPrice = cursor.getString(priceColumnIndex);
-            currentUriQuanitiy = cursor.getString(quantityColumnIndex);
+            mCurrentUriName = cursor.getString(nameColumnIndex);
+            mCurrentUriPrice = cursor.getString(priceColumnIndex);
+            mCurrentUriQuanitiy = cursor.getString(quantityColumnIndex);
 
             // Update the views on the screen with the values from the database
-            mNameEditText.setText(currentUriName);
-            mPriceEditText.setText(currentUriPrice);
-            mQuantityEditText.setText(currentUriQuanitiy);
+            mNameEditText.setText(mCurrentUriName);
+            mPriceEditText.setText(mCurrentUriPrice);
+            mQuantityEditText.setText(mCurrentUriQuanitiy);
         }
     }
 
@@ -304,19 +340,18 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         // If there is no item, i.e. adding a new one, then we don't need to check if it has changed or not, return false
         if (mCurrentItemUri == null)
             return false;
+
         // We can check if the item has changed by checking the current text entered against the saved state information
-        if (!currentUriName.equalsIgnoreCase(mNameEditText.getText().toString().trim())) {
+        if (!mCurrentUriName.equalsIgnoreCase(mNameEditText.getText().toString().trim())) {
             Log.i(TAG, "Different name");
             return true;
-        } else if (!currentUriPrice.equalsIgnoreCase(mPriceEditText.getText().toString().trim())) {
+        } else if (!mCurrentUriPrice.equalsIgnoreCase(mPriceEditText.getText().toString().trim())) {
             Log.i(TAG, "Different price");
             return true;
-        } else if (!currentUriQuanitiy.equalsIgnoreCase(mQuantityEditText.getText().toString().trim())) {
+        } else if (!mCurrentUriQuanitiy.equalsIgnoreCase(mQuantityEditText.getText().toString().trim())) {
             Log.i(TAG, "Different quantity");
             return true;
         }
         return false;
     }
-
-
 }
