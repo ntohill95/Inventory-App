@@ -20,6 +20,7 @@
     <string name="keep_editing">Keep Editing</string>
     <string name="delete_dialog_msg">Delete this item?</string>
     <string name="delete">Delete</string>
+    <string name="editor_cannot_delete">Cannot delete an item that does not yet exist</string>
     <string name="cancel">Cancel</string>
     <string name="editor_delete_item_failed">Error with deleting item</string>
     <string name="editor_delete_item_successful">Item deleted</string>

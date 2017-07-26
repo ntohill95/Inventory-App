@@ -26,12 +26,13 @@ import com.example.android.inventoryapp.data.InventoryContract.InventoryEntry;
 import com.example.android.inventoryapp.data.InventoryDbHelper;
 
 import static android.R.attr.id;
+import static com.example.android.inventoryapp.R.id.quantity;
 
 /**
  * Created by Niamh on 25/07/2017.
  */
 
-public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>  {
+public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = EditorActivity.class.getSimpleName();
     private static final int EXISTING_ITEM_LOADER = 0;
     private EditText mNameEditText;
@@ -39,15 +40,10 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private EditText mQuantityEditText;
     private Uri mCurrentItemUri;
 
-    private boolean mItemHasChanged = false;
+    private String currentUriName;
+    private String currentUriPrice;
+    private String currentUriQuanitiy;
 
-    private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            mItemHasChanged = true;
-            return false;
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,21 +69,21 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     private void saveItem() {
 
-        Log.i(TAG,"Trying to save item");
+        Log.i(TAG, "Trying to save item");
         // Read from input fields
         // Use trim to eliminate leading or trailing white space
         String nameString = mNameEditText.getText().toString().trim();
-        if(TextUtils.isEmpty(nameString)) {
+        if (TextUtils.isEmpty(nameString)) {
             Toast.makeText(this, getString(R.string.editor_no_name_error), Toast.LENGTH_SHORT).show();
             return;
         }
         String priceString = mPriceEditText.getText().toString().trim();
-        if(TextUtils.isEmpty(priceString)) {
+        if (TextUtils.isEmpty(priceString)) {
             Toast.makeText(this, getString(R.string.editor_no_price_error), Toast.LENGTH_SHORT).show();
             return;
         }
         String quantityString = mQuantityEditText.getText().toString().trim();
-        if(TextUtils.isEmpty(quantityString)) {
+        if (TextUtils.isEmpty(quantityString)) {
             Toast.makeText(this, getString(R.string.editor_no_quantity_error), Toast.LENGTH_SHORT).show();
             return;
         }
@@ -102,12 +98,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             // This is a NEW item, so insert a new item into the provider,
             // returning the content URI for the new item.
             Uri newUri = getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
-            // Show a toast message depending on whether or not the insertion was successful.
             if (newUri == null) {
-                // If the new content URI is null, then there was an error with insertion.
                 Toast.makeText(this, getString(R.string.editor_insert_item_failed), Toast.LENGTH_SHORT).show();
             } else {
-                // Otherwise, the insertion was successful and we can display a toast.
                 Toast.makeText(this, getString(R.string.editor_insert_item_successful), Toast.LENGTH_SHORT).show();
             }
             finish();
@@ -117,36 +110,22 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             // because mCurrentItemUri will already identify the correct row in the database that
             // we want to modify.
             int rowsAffected = getContentResolver().update(mCurrentItemUri, values, null, null);
-            // Show a toast message depending on whether or not the update was successful.
             if (rowsAffected == 0) {
-                // If no rows were affected, then there was an error with the update.
                 Toast.makeText(this, getString(R.string.editor_update_item_failed), Toast.LENGTH_SHORT).show();
             } else {
-                // Otherwise, the update was successful and we can display a toast.
                 Toast.makeText(this, getString(R.string.editor_update_item_successful), Toast.LENGTH_SHORT).show();
                 finish();
             }
         }
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_editor, menu);
         return true;
     }
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        if (mCurrentItemUri == null) {
-            MenuItem menuItem = menu.findItem(R.id.action_delete);
 
-            //this nextline should be in but crashes when in! help?
-            //menuItem.setVisible(false);
-        }
-        return true;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // User clicked on a menu option in the app bar overflow menu
         switch (item.getItemId()) {
@@ -161,23 +140,18 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             case android.R.id.home:
                 // If the item hasn't changed, continue with navigating up to parent activity
                 // which is the {@link CatalogActivity}.
-                if (!mItemHasChanged) {
+                Log.i(TAG, "Home option selected");
+                if (hasItemChanged() == false) {
                     NavUtils.navigateUpFromSameTask(EditorActivity.this);
-                    return true;
+                } else {
+                    DialogInterface.OnClickListener discardButtonClickListener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            NavUtils.navigateUpFromSameTask(EditorActivity.this);
+                        }
+                    };
+                    showUnsavedChangesDialog(discardButtonClickListener);
                 }
-                // Otherwise if there are unsaved changes, setup a dialog to warn the user.
-                // Create a click listener to handle the user confirming that
-                // changes should be discarded.
-                DialogInterface.OnClickListener discardButtonClickListener =
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                // User clicked "Discard" button, navigate to parent activity.
-                                NavUtils.navigateUpFromSameTask(EditorActivity.this);
-                            }
-                        };
-                // Show a dialog that notifies the user they have unsaved changes
-                showUnsavedChangesDialog(discardButtonClickListener);
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -188,9 +162,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
      */
     @Override
     public void onBackPressed() {
-        // If the item hasn't changed, continue with handling back button press
-        if (!mItemHasChanged) {
-            super.onBackPressed();
+        Log.i(TAG, "Pressing the back button");
+        if (hasItemChanged() == false) {
             return;
         }
         // Otherwise if there are unsaved changes, setup a dialog to warn the user.
@@ -206,6 +179,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         // Show dialog that there are unsaved changes
         showUnsavedChangesDialog(discardButtonClickListener);
     }
+
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         // Since the editor shows all item attributes, define a projection that contains
@@ -239,18 +213,14 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             int priceColumnIndex = cursor.getColumnIndex(InventoryEntry.COLUMN_ITEM_PRICE);
             int quantityColumnIndex = cursor.getColumnIndex(InventoryEntry.COLUMN_ITEM_QUANTITY);
 
-
-            // Extract out the value from the Cursor for the given column index
-            String name = cursor.getString(nameColumnIndex);
-            String price = cursor.getString(priceColumnIndex);
-            String quantity = cursor.getString(quantityColumnIndex);
-
+            currentUriName = cursor.getString(nameColumnIndex);
+            currentUriPrice = cursor.getString(priceColumnIndex);
+            currentUriQuanitiy = cursor.getString(quantityColumnIndex);
 
             // Update the views on the screen with the values from the database
-            mNameEditText.setText(name);
-            mPriceEditText.setText(price);
-            mQuantityEditText.setText(quantity);
-
+            mNameEditText.setText(currentUriName);
+            mPriceEditText.setText(currentUriPrice);
+            mQuantityEditText.setText(currentUriQuanitiy);
         }
     }
 
@@ -262,8 +232,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mQuantityEditText.setText("");
     }
 
-    private void showUnsavedChangesDialog(
-            DialogInterface.OnClickListener discardButtonClickListener) {
+    private void showUnsavedChangesDialog(DialogInterface.OnClickListener discardButtonClickListener) {
         // Create an AlertDialog.Builder and set the message, and click listeners
         // for the postive and negative buttons on the dialog.
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -310,13 +279,34 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         if (mCurrentItemUri != null) {
             int rowsDeleted = getContentResolver().delete(mCurrentItemUri, null, null);
             if (rowsDeleted == 0) {
-                Toast.makeText(this, getString(R.string.editor_delete_item_failed),Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.editor_delete_item_failed), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, getString(R.string.editor_delete_item_successful), Toast.LENGTH_SHORT).show();
             }
-            else {
-                Toast.makeText(this, getString(R.string.editor_delete_item_successful),Toast.LENGTH_SHORT).show();
-            }
+            finish();
+        } else {
+            Toast.makeText(this, getString(R.string.editor_cannot_delete), Toast.LENGTH_SHORT).show();
         }
-        finish();
+
     }
+
+    private Boolean hasItemChanged() {
+        // If there is no item, i.e. adding a new one, then we don't need to check if it has changed or not, return false
+        if (mCurrentItemUri == null)
+            return false;
+        // We can check if the item has changed by checking the current text entered against the saved state information
+        if (!currentUriName.equalsIgnoreCase(mNameEditText.getText().toString().trim())) {
+            Log.i(TAG, "Different name");
+            return true;
+        } else if (!currentUriPrice.equalsIgnoreCase(mPriceEditText.getText().toString().trim())) {
+            Log.i(TAG, "Different price");
+            return true;
+        } else if (!currentUriQuanitiy.equalsIgnoreCase(mQuantityEditText.getText().toString().trim())) {
+            Log.i(TAG, "Different quantity");
+            return true;
+        }
+        return false;
+    }
+
 
 }
