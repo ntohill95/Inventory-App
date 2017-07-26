@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -16,23 +15,23 @@
 
         <!-- Label -->
         <TextView
-            android:text="@string/category_overview"
-            style="@style/CategoryStyle" />
+            style="@style/CategoryStyle"
+            android:text="@string/category_overview" />
 
         <!-- Input fields -->
         <LinearLayout
-            android:layout_height="wrap_content"
             android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="2"
-            android:paddingLeft="4dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingLeft="4dp">
 
             <!-- Name field -->
             <EditText
                 android:id="@+id/edit_name"
+                style="@style/EditorFieldStyle"
                 android:hint="@string/hint_name"
-                android:inputType="textCapWords"
-                style="@style/EditorFieldStyle" />
+                android:inputType="textCapWords" />
 
         </LinearLayout>
     </LinearLayout>
@@ -46,21 +45,21 @@
 
         <!-- Label -->
         <TextView
-            android:text="@string/category_price"
-            style="@style/CategoryStyle" />
+            style="@style/CategoryStyle"
+            android:text="@string/category_price" />
 
         <!-- Input field -->
         <LinearLayout
-            android:layout_height="wrap_content"
             android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="2"
             android:orientation="vertical">
 
             <EditText
                 android:id="@+id/edit_price"
+                style="@style/EditorFieldStyle"
                 android:hint="@string/hint_price"
-                android:inputType="textCapWords"
-                style="@style/EditorFieldStyle" />
+                android:inputType="textCapWords" />
         </LinearLayout>
     </LinearLayout>
 
@@ -73,28 +72,28 @@
 
         <!-- Label -->
         <TextView
-            android:text="@string/category_quantity"
-            style="@style/CategoryStyle" />
+            style="@style/CategoryStyle"
+            android:text="@string/category_quantity" />
 
         <LinearLayout
-            android:layout_height="wrap_content"
             android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="2"
             android:orientation="vertical">
 
             <EditText
                 android:id="@+id/edit_quantity"
+                style="@style/EditorFieldStyle"
                 android:hint="@string/hint_quantity"
-                android:inputType="textCapWords"
-                style="@style/EditorFieldStyle" />
+                android:inputType="textCapWords" />
         </LinearLayout>
     </LinearLayout>
 
     <Button
+        android:id="@+id/deleteButton"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:id="@+id/deleteButton"
-        android:text="@string/delete"/>
+        android:text="@string/delete" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -102,15 +101,27 @@
         android:layout_gravity="center">
 
         <ImageButton
-            android:layout_width="50dp"
-            android:layout_height="50dp"
             android:id="@+id/decreaseQuantity"
-            android:src="@android:drawable/ic_input_delete"/>
-        <ImageButton
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:src="@android:drawable/ic_input_delete" />
+
+        <ImageButton
             android:id="@+id/increaseQuantity"
-            android:src="@android:drawable/ic_input_add"/>
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@android:drawable/ic_input_add" />
 
     </LinearLayout>
+
+    <Button
+        android:id="@+id/imageChooser"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="Image" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </LinearLayout>

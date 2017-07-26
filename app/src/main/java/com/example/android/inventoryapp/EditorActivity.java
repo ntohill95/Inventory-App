@@ -4,8 +4,11 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.NavUtils;
 import android.support.v4.content.CursorLoader;
@@ -20,11 +23,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.android.inventoryapp.data.InventoryContract.InventoryEntry;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import static android.R.attr.bitmap;
 import static android.R.attr.id;
+import static com.example.android.inventoryapp.R.id.imageView;
 
 /**
  * Created by Niamh on 25/07/2017.
@@ -37,12 +46,15 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private EditText mPriceEditText;
     private EditText mQuantityEditText;
     private Uri mCurrentItemUri;
+    private static final int PICK_IMAGE_REQUEST = 1;
     private Button mDeleteButton;
+    private Button mImageChooser;
     private ImageButton mIncreaseQuantity;
     private ImageButton mDecreaseQuantity;
     private String mCurrentUriName;
     private String mCurrentUriPrice;
     private String mCurrentUriQuanitiy;
+    private byte[] imageBytes;
 
 
     @Override
@@ -64,6 +76,16 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             @Override
             public void onClick(View v) {
                 showDeleteConfirmationDialog();
+            }
+        });
+        mImageChooser = (Button) findViewById(R.id.imageChooser);
+        mImageChooser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
             }
         });
 
@@ -99,8 +121,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             setTitle(getString(R.string.editor_activity_title_edit_item));
             getSupportLoaderManager().initLoader(EXISTING_ITEM_LOADER, null, this);
         }
-
-
     }
 
     private void saveItem() {
@@ -123,11 +143,16 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             Toast.makeText(this, getString(R.string.editor_no_quantity_error), Toast.LENGTH_SHORT).show();
             return;
         }
+        if (imageBytes == null) {
+            Toast.makeText(this, "No image", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         ContentValues values = new ContentValues();
         values.put(InventoryEntry.COLUMN_ITEM_NAME, nameString);
         values.put(InventoryEntry.COLUMN_ITEM_PRICE, priceString);
         values.put(InventoryEntry.COLUMN_ITEM_QUANTITY, quantityString);
+        values.put(InventoryEntry.COLUMN_ITEM_IMAGE_BITMAP, this.imageBytes);
 
         // Determine if this is a new or existing item by checking if mCurrentItemUri is null or not
         if (mCurrentItemUri == null) {
@@ -230,13 +255,14 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         // Since the editor shows all item attributes, define a projection that contains
         // all columns from the item table
-        switch (id) {
+        switch (i) {
             case EXISTING_ITEM_LOADER:
                 String[] projection = {
                         InventoryEntry._ID,
                         InventoryEntry.COLUMN_ITEM_NAME,
                         InventoryEntry.COLUMN_ITEM_PRICE,
-                        InventoryEntry.COLUMN_ITEM_QUANTITY};
+                        InventoryEntry.COLUMN_ITEM_QUANTITY,
+                        InventoryEntry.COLUMN_ITEM_IMAGE_BITMAP};
                 // This loader will execute the ContentProvider's query method on a background thread
                 return new CursorLoader(this, mCurrentItemUri, projection, null, null, null);
             default:
@@ -258,15 +284,25 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             int nameColumnIndex = cursor.getColumnIndex(InventoryEntry.COLUMN_ITEM_NAME);
             int priceColumnIndex = cursor.getColumnIndex(InventoryEntry.COLUMN_ITEM_PRICE);
             int quantityColumnIndex = cursor.getColumnIndex(InventoryEntry.COLUMN_ITEM_QUANTITY);
+            int imageBitmapColumnIndex = cursor.getColumnIndex(InventoryEntry.COLUMN_ITEM_IMAGE_BITMAP);
+
 
             mCurrentUriName = cursor.getString(nameColumnIndex);
             mCurrentUriPrice = cursor.getString(priceColumnIndex);
             mCurrentUriQuanitiy = cursor.getString(quantityColumnIndex);
+            byte[] cursorBlob = cursor.getBlob(imageBitmapColumnIndex);
+            this.imageBytes = cursorBlob;
 
             // Update the views on the screen with the values from the database
             mNameEditText.setText(mCurrentUriName);
             mPriceEditText.setText(mCurrentUriPrice);
             mQuantityEditText.setText(mCurrentUriQuanitiy);
+
+
+            if (cursorBlob != null) {
+                ImageView imageView = (ImageView) findViewById(R.id.imageView);
+                imageView.setImageBitmap(this.getImage(cursorBlob));
+            }
         }
     }
 
@@ -353,5 +389,32 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             return true;
         }
         return false;
+    }
+
+    public byte[] getBytes(Bitmap bitmap) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
+        return stream.toByteArray();
+    }
+
+    public Bitmap getImage(byte[] image) {
+        return BitmapFactory.decodeByteArray(image, 0, image.length);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri uri = data.getData();
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                ImageView imageView = (ImageView) findViewById(R.id.imageView);
+                imageView.setImageBitmap(bitmap);
+                this.imageBytes = this.getBytes(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

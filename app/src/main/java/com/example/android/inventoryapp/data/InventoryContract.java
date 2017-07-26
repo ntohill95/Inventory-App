@@ -27,6 +27,7 @@ public class InventoryContract {
         public final static String COLUMN_ITEM_NAME = "name";
         public final static String COLUMN_ITEM_PRICE = "price";
         public final static String COLUMN_ITEM_QUANTITY = "quantity";
+        public final static String COLUMN_ITEM_IMAGE_BITMAP = "image_bitmap";
 
 
         public static final String CONTENT_LIST_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_ITEMS;

@@ -27,9 +27,9 @@ import com.example.android.inventoryapp.data.InventoryProvider;
 import static android.R.attr.data;
 
 
-public class CatalogActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
+public class CatalogActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = CatalogActivity.class.getSimpleName();
-    private static final int INVENTORY_LOADER=0;
+    private static final int INVENTORY_LOADER = 0;
     private InventoryCursorAdapter mCursorAdapter;
 
 
@@ -60,7 +60,7 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
                 Uri currentItemUri = ContentUris.withAppendedId(InventoryEntry.CONTENT_URI, id);
-                Log.i(TAG,"This is the URI we clicked: " + currentItemUri);
+                Log.i(TAG, "This is the URI we clicked: " + currentItemUri);
                 intent.setData(currentItemUri);
                 startActivity(intent);
             }
@@ -76,7 +76,7 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         return true;
     }
 
-    private void insertDummyItem(){
+    private void insertDummyItem() {
         ContentValues values = new ContentValues();
         values.put(InventoryEntry.COLUMN_ITEM_NAME, "Toto");
         values.put(InventoryEntry.COLUMN_ITEM_PRICE, "£10");
@@ -106,13 +106,14 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        switch(id) {
+        switch (id) {
             case INVENTORY_LOADER:
                 String[] projection = {
                         InventoryEntry._ID,
                         InventoryEntry.COLUMN_ITEM_NAME,
                         InventoryEntry.COLUMN_ITEM_PRICE,
-                        InventoryEntry.COLUMN_ITEM_QUANTITY};
+                        InventoryEntry.COLUMN_ITEM_QUANTITY,
+                        InventoryEntry.COLUMN_ITEM_IMAGE_BITMAP};
                 return new CursorLoader(this, InventoryEntry.CONTENT_URI, projection, null, null, null);
             default:
                 return null;
