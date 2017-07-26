@@ -133,16 +133,27 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             Toast.makeText(this, getString(R.string.editor_no_name_error), Toast.LENGTH_SHORT).show();
             return;
         }
+
         String priceString = mPriceEditText.getText().toString().trim();
         if (TextUtils.isEmpty(priceString)) {
             Toast.makeText(this, getString(R.string.editor_no_price_error), Toast.LENGTH_SHORT).show();
             return;
         }
+        if(!priceString.matches("^-?\\d+$")) {
+            Toast.makeText(this, "Price has to be a number!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String quantityString = mQuantityEditText.getText().toString().trim();
         if (TextUtils.isEmpty(quantityString)) {
             Toast.makeText(this, getString(R.string.editor_no_quantity_error), Toast.LENGTH_SHORT).show();
             return;
         }
+        if(!quantityString.matches("^-?\\d+$")) {
+            Toast.makeText(this, "Quantity has to be a number!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (imageBytes == null) {
             Toast.makeText(this, "No image", Toast.LENGTH_SHORT).show();
             return;
