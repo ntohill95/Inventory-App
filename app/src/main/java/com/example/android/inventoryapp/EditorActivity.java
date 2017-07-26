@@ -35,6 +35,7 @@ import static android.R.attr.bitmap;
 import static android.R.attr.id;
 import static com.example.android.inventoryapp.R.id.imageView;
 
+
 /**
  * Created by Niamh on 25/07/2017.
  */
@@ -78,9 +79,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 Intent intent = new Intent(Intent.ACTION_SENDTO);
                 intent.setData(Uri.parse("mailto:")); // only email apps should handle this
                 intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.emailOrder) +" "+ mNameEditText.getText().toString());
-                intent.putExtra(Intent.EXTRA_TEXT, mPriceEditText.getText().toString());
-                intent.putExtra(Intent.EXTRA_TEXT, mQuantityEditText.getText().toString());
-
+                intent.putExtra(Intent.EXTRA_TEXT, emailMessage(mPriceEditText.getText().toString(), mQuantityEditText.getText().toString()));
                 if (intent.resolveActivity(getPackageManager()) != null) {
                     startActivity(intent);
                 }
@@ -444,5 +443,11 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 e.printStackTrace();
             }
         }
+    }
+
+    private String emailMessage(String price, String quantity){
+        String emailMessageSummary = getString(R.string.price) + " : " + price;
+        emailMessageSummary += "\n" + getString(R.string.quantityLeft) + " : " + quantity;
+        return emailMessageSummary;
     }
 }

@@ -35,7 +35,8 @@
     <string name="editor_no_quantity_error">No quantity provided</string>
     <string name="order">Order More</string>
     <string name="emailOrder">Order for more:</string>
-    <string name="action_delete_all_entries">Delete All Items</string>
+    <string name="quantityLeft">Quantity Left in Stock</string>
+<string name="action_delete_all_entries">Delete All Items</string>
 
 
 </resources>
