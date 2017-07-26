@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">InventoryApp</string>
     <string name="test">test</string>
-    <string name="remaining">Quantity Remaining = </string>
+    <string name="quantityRemaining">Quantity Remaining = </string>
     <string name="category_overview">Overview</string>
     <string name="hint_name">Name</string>
     <string name="category_price">Price</string>
@@ -22,6 +22,7 @@
     <string name="delete">Delete</string>
     <string name="editor_cannot_delete">Cannot delete an item that does not yet exist</string>
     <string name="sell">Sell</string>
+    <string name="price">Price</string>
     <string name="cancel">Cancel</string>
     <string name="editor_delete_item_failed">Error with deleting item</string>
     <string name="editor_delete_item_successful">Item deleted</string>
