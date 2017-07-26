@@ -28,10 +28,10 @@ import static android.R.attr.data;
 
 
 public class CatalogActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
-
+    private static final String TAG = CatalogActivity.class.getSimpleName();
     private static final int INVENTORY_LOADER=0;
     private InventoryCursorAdapter mCursorAdapter;
-    private InventoryProvider contentProvider;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +52,6 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         View emptyView = findViewById(R.id.empty_view);
         inventoryListView.setEmptyView(emptyView);
 
-        //contentProvider = new InventoryProvider();
         mCursorAdapter = new InventoryCursorAdapter(this, null);
         inventoryListView.setAdapter(mCursorAdapter);
 
@@ -61,6 +60,7 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
                 Uri currentItemUri = ContentUris.withAppendedId(InventoryEntry.CONTENT_URI, id);
+                Log.i(TAG,"This is the URI we clicked: " + currentItemUri);
                 intent.setData(currentItemUri);
                 startActivity(intent);
             }
@@ -76,7 +76,7 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         return true;
     }
 
-    private void insertItem(){
+    private void insertDummyItem(){
         ContentValues values = new ContentValues();
         values.put(InventoryEntry.COLUMN_ITEM_NAME, "Toto");
         values.put(InventoryEntry.COLUMN_ITEM_PRICE, "£10");
@@ -90,7 +90,7 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         switch (item.getItemId()) {
             // Respond to a click on the "Insert dummy data" menu option
             case R.id.action_insert_dummy_data:
-                insertItem();
+                insertDummyItem();
                 return true;
             case R.id.action_delete_all_entries:
                 deleteAllItems();
