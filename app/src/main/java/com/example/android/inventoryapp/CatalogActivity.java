@@ -22,13 +22,16 @@ import android.widget.TextView;
 
 import com.example.android.inventoryapp.data.InventoryContract.InventoryEntry;
 import com.example.android.inventoryapp.data.InventoryDbHelper;
+import com.example.android.inventoryapp.data.InventoryProvider;
 
+import static android.R.attr.data;
 
 
 public class CatalogActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
 
     private static final int INVENTORY_LOADER=0;
-    InventoryCursorAdapter mCursorAdapter;
+    private InventoryCursorAdapter mCursorAdapter;
+    private InventoryProvider contentProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +52,7 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         View emptyView = findViewById(R.id.empty_view);
         inventoryListView.setEmptyView(emptyView);
 
+        //contentProvider = new InventoryProvider();
         mCursorAdapter = new InventoryCursorAdapter(this, null);
         inventoryListView.setAdapter(mCursorAdapter);
 
@@ -76,7 +80,7 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         ContentValues values = new ContentValues();
         values.put(InventoryEntry.COLUMN_ITEM_NAME, "Toto");
         values.put(InventoryEntry.COLUMN_ITEM_PRICE, "£10");
-        values.put(InventoryEntry.COLUMN_ITEM_QUANTITY, 7);
+        values.put(InventoryEntry.COLUMN_ITEM_QUANTITY, "7");
         Uri newUri = getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
     }
 
@@ -102,11 +106,16 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        String[] projection = {
-                InventoryEntry._ID,
-                InventoryEntry.COLUMN_ITEM_NAME,
-                InventoryEntry.COLUMN_ITEM_PRICE};
-        return new CursorLoader(this, InventoryEntry.CONTENT_URI, projection, null, null, null);
+        switch(id) {
+            case INVENTORY_LOADER:
+                String[] projection = {
+                        InventoryEntry._ID,
+                        InventoryEntry.COLUMN_ITEM_NAME,
+                        InventoryEntry.COLUMN_ITEM_PRICE};
+                return new CursorLoader(this, InventoryEntry.CONTENT_URI, projection, null, null, null);
+            default:
+                return null;
+        }
     }
 
     @Override

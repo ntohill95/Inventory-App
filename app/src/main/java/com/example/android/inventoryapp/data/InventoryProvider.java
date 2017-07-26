@@ -29,7 +29,7 @@ public class InventoryProvider extends ContentProvider {
 
     static {
         sUriMatcher.addURI(InventoryContract.CONTENT_AUTHORITY, InventoryContract.PATH_ITEMS, ITEMS);
-        sUriMatcher.addURI(InventoryContract.CONTENT_AUTHORITY, InventoryContract.PATH_ITEMS + "/n", ITEM_ID);
+        sUriMatcher.addURI(InventoryContract.CONTENT_AUTHORITY, InventoryContract.PATH_ITEMS + "/#", ITEM_ID);
     }
     private InventoryDbHelper mDbHelper;
 
@@ -40,9 +40,7 @@ public class InventoryProvider extends ContentProvider {
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
-                        String sortOrder) {
-
+    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         // Get readable database
         SQLiteDatabase database = mDbHelper.getReadableDatabase();
 
@@ -85,48 +83,6 @@ public class InventoryProvider extends ContentProvider {
 
     private Uri insertItem(Uri uri, ContentValues values) {
 
-        String name = values.getAsString(InventoryEntry.COLUMN_ITEM_NAME);
-        if (name == null) {
-            throw new IllegalArgumentException("Item requires a name");
-        }
-        String price = values.getAsString(InventoryEntry.COLUMN_ITEM_PRICE);
-        if (price == null) {
-            throw new IllegalArgumentException("Item requires a price");
-        }
-        String quantity = values.getAsString(InventoryEntry.COLUMN_ITEM_QUANTITY);
-        if (quantity == null) {
-            throw new IllegalArgumentException("Item requires a quantity");
-        }
-
-        SQLiteDatabase database = mDbHelper.getWritableDatabase();
-        long id = database.insert(InventoryEntry.TABLE_NAME, null, values);
-        if (id == -1) {
-            Log.e(LOG_TAG, "Failed to insert row for " + uri);
-            return null;
-        }
-        getContext().getContentResolver().notifyChange(uri, null);
-        return ContentUris.withAppendedId(uri, id);
-    }
-
-
-    @Override
-    public int update(Uri uri, ContentValues contentValues, String selection,
-                      String[] selectionArgs) {
-        final int match = sUriMatcher.match(uri);
-        switch (match) {
-            case ITEMS:
-                return updateItem(uri, contentValues, selection, selectionArgs);
-            case ITEM_ID:
-                selection = InventoryEntry._ID + "=?";
-                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-                return updateItem(uri, contentValues, selection, selectionArgs);
-            default:
-                throw new IllegalArgumentException("Update is not supported for " + uri);
-        }
-    }
-
-    private int updateItem(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-
         if (values.containsKey(InventoryEntry.COLUMN_ITEM_NAME)) {
             String name = values.getAsString(InventoryEntry.COLUMN_ITEM_NAME);
             if (name == null) {
@@ -142,13 +98,62 @@ public class InventoryProvider extends ContentProvider {
         if (values.containsKey(InventoryEntry.COLUMN_ITEM_QUANTITY)) {
             String quantity = values.getAsString(InventoryEntry.COLUMN_ITEM_QUANTITY);
             if (quantity == null) {
-                throw new IllegalArgumentException("Item requires a price");
+                throw new IllegalArgumentException("Item requires a quantity");
             }
         }
+
+        SQLiteDatabase database = mDbHelper.getWritableDatabase();
+        long id = database.insert(InventoryEntry.TABLE_NAME, null, values);
+        if (id == -1) {
+            Log.e(LOG_TAG, "Failed to insert row for " + uri);
+            return null;
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+        return ContentUris.withAppendedId(uri, id);
+    }
+
+
+    @Override
+    public int update(Uri uri, ContentValues contentValues, String selection, String[] selectionArgs) {
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case ITEMS:
+                return updateItem(uri, contentValues, selection, selectionArgs);
+            case ITEM_ID:
+                selection = InventoryEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return updateItem(uri, contentValues, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Update is not supported for " + uri);
+        }
+    }
+
+    private int updateItem(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
 
         if (values.size() == 0) {
             return 0;
         }
+
+        if (values.containsKey(InventoryEntry.COLUMN_ITEM_NAME)) {
+            String name = values.getAsString(InventoryEntry.COLUMN_ITEM_NAME);
+            if (name == null) {
+                throw new IllegalArgumentException("Item requires a name");
+            }
+        }
+        if (values.containsKey(InventoryEntry.COLUMN_ITEM_PRICE)) {
+            String price = values.getAsString(InventoryEntry.COLUMN_ITEM_PRICE);
+            if (price == null) {
+                throw new IllegalArgumentException("Item requires a price");
+            }
+        }
+        if (values.containsKey(InventoryEntry.COLUMN_ITEM_QUANTITY)) {
+            int quantity = values.getAsInteger(InventoryEntry.COLUMN_ITEM_QUANTITY);
+            if (quantity < 0) {
+                throw new IllegalArgumentException("Item requires a valid price");
+            }
+        }
+
+
         // Otherwise, get writeable database to update the data
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 

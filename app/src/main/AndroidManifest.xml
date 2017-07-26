@@ -27,7 +27,7 @@
         </activity>
         <provider
             android:authorities="com.example.android.inventoryapp"
-            android:name=".data.InventoryProvider"
+            android:name="com.example.android.inventoryapp.data.InventoryProvider"
             android:exported="false"/>
     </application>
 
