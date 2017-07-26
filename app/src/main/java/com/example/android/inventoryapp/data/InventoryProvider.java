@@ -131,6 +131,7 @@ public class InventoryProvider extends ContentProvider {
     private int updateItem(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
 
         if (values.size() == 0) {
+            Log.i(LOG_TAG,"No values, nothing to update");
             return 0;
         }
 
@@ -149,7 +150,7 @@ public class InventoryProvider extends ContentProvider {
         if (values.containsKey(InventoryEntry.COLUMN_ITEM_QUANTITY)) {
             int quantity = values.getAsInteger(InventoryEntry.COLUMN_ITEM_QUANTITY);
             if (quantity < 0) {
-                throw new IllegalArgumentException("Item requires a valid price");
+                throw new IllegalArgumentException("Item requires a valid quantity");
             }
         }
 
@@ -160,6 +161,7 @@ public class InventoryProvider extends ContentProvider {
         // Returns the number of database rows affected by the update statement
         int rowsUpdated = database.update(InventoryEntry.TABLE_NAME, values, selection, selectionArgs);
         if (rowsUpdated != 0) {
+            Log.i(LOG_TAG,"Successfully updated item");
             getContext().getContentResolver().notifyChange(uri, null);
         }
         return rowsUpdated;
